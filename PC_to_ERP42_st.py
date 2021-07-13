@@ -138,6 +138,16 @@ def acker_callback(msg):
     gear = int(msg.drive.acceleration)
     #print(steer*180/np.pi)
 
+def acker_callback2(msg):
+    global speed, steer, brake, gear
+
+    speed = 0
+    steer = 0
+
+    brake = int(msg.drive.jerk)
+    gear = 0
+    #print(steer*180/np.pi)
+
 
 def vel_callback(msg):
     global linear, angular
@@ -149,9 +159,9 @@ def vel_callback(msg):
 def callback2(msg):
     
     if msg.data == 1:        
-        rospy.Subscriber("/ackermann_cmd", AckermannDriveStamped, acker_callback) #Lane_ack_vel , /ackermann_cmd
+        rospy.Subscriber("/ackermann_cmd", AckermannDriveStamped, acker_callback2) #Lane_ack_vel , /ackermann_cmd
         rate = rospy.Rate(20)
-        print(speed)
+        #print(speed)
         print('stop')
         
         #global speed
@@ -159,7 +169,7 @@ def callback2(msg):
     if msg.data == 0:
         rospy.Subscriber("/ackermann_cmd", AckermannDriveStamped, acker_callback) #Lane_ack_vel , /ackermann_cmd
         rate = rospy.Rate(20)
-        print(speed)
+        #print(speed)
         print('go')
         
         #global speed
@@ -171,17 +181,16 @@ if __name__ == '__main__':
     # rospy.Subscriber("/ackermann_cmd", AckermannDriveStamped, acker_callback) #Lane_ack_vel , /ackermann_cmd
     rate = rospy.Rate(20)
 
-    #port = str(rospy.get_param("~robot_port","/dev/ttyUSB3"))
+    port = str(rospy.get_param("~robot_port","/dev/ttyUSB3"))
 
-    #ser = serial.serial_for_url(port, baudrate=115200, timeout=1)
-    while(1):  
+    ser = serial.serial_for_url(port, baudrate=115200, timeout=1)
+ 
+    while (ser.isOpen() and (not rospy.is_shutdown())):
         rospy.Subscriber('stop_line', Int32, callback2, queue_size=5)
         print('speed-output:',speed)
         Send_to_ERP42(gear, speed, steer, brake)
         rate.sleep()
  
-    #while (ser.isOpen() and (not rospy.is_shutdown())):
-    #while(1) :
 	# #Send to Controller
     # 
 	
